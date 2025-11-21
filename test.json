@@ -1,0 +1,20 @@
+{
+"intro": {
+    "title": "The Little Blue Gopher",
+    "story": [
+      "this is line 1",
+      "this is line 2",
+      "this is line 3"
+    ],
+    "options": [
+      {
+        "text": "This is the story text for option 1.",
+        "arc": "new-york"
+      },
+      {
+        "text": "this is the story text for option 2",
+        "arc": "denver"
+      }
+    ]
+  }
+}
