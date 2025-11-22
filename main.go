@@ -3,10 +3,12 @@ package main
 import (
 	//"encoding/json"
 	"encoding/json"
-	"fmt"
+
 	"log"
-	"os"
 	"net/http"
+	"os"
+
+	"html/template"
 )
 
 type Options struct {
@@ -21,9 +23,8 @@ type StoryArc struct {
 }
 
 type MyHandler struct {
-	message string
+	UnmarshaledJSON map[string]StoryArc
 }
-
 
 
 func unmarshalJSON() (map[string]StoryArc, error) {
@@ -43,20 +44,45 @@ func unmarshalJSON() (map[string]StoryArc, error) {
 }
 
 func  (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello from my handler: %s", h.message)
+	
+	var path string
+	tmpl := template.Must(template.ParseFiles("page.html"))
+	if r.URL.Path == "/" {
+	
+		path = "intro"
+
+		data := StoryArc{
+			Title:  h.UnmarshaledJSON[path].Title,
+			Story: h.UnmarshaledJSON[path].Story,
+			Options: h.UnmarshaledJSON[path].Options,
+		}
+
+		tmpl.Execute(w, data)
+	} else {
+	
+		path :=  r.URL.Path[1:] 
+
+		data := StoryArc{
+			Title:  h.UnmarshaledJSON[path].Title,
+			Story: h.UnmarshaledJSON[path].Story,
+			Options: h.UnmarshaledJSON[path].Options,
+		}
+
+		tmpl.Execute(w, data)
+	}
 }
 
 func main() {
 
 	unmarshaledJSON, err := unmarshalJSON()
 	
-
 	if err != nil {
 		log.Fatal("error unmarshaling JSON")
 	}
 
+	handler := &MyHandler{UnmarshaledJSON: unmarshaledJSON}
+	http.Handle("/", handler)
 
-	http.Handle("/", introHandler)
 
 	http.ListenAndServe(":8080", nil)
 
